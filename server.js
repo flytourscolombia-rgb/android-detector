@@ -1,51 +1,31 @@
 const express = require("express");
+const DeviceDetector = require("device-detector-js");
+
 const app = express();
-
-app.use(express.json());
-
-const devices = {
-  "SM-S918B": {
-    model: "Samsung Galaxy S23 Ultra",
-    android: "14"
-  },
-  "Pixel 8": {
-    model: "Google Pixel 8",
-    android: "14"
-  },
-  "SM-A515F": {
-    model: "Samsung Galaxy A51",
-    android: "13"
-  }
-};
+const detector = new DeviceDetector();
 
 app.get("/", (req, res) => {
-  res.send("API PideeQR funcionando");
+  res.send("API detector funcionando");
 });
 
-app.get("/device", (req, res) => {
+app.get("/detect", (req, res) => {
 
-  const brand = req.query.brand;
-  const device = req.query.deviceId;
+  const userAgent = req.headers["user-agent"];
+  const device = detector.parse(userAgent);
 
-  if(devices[device]){
-    res.json({
-      brand: brand,
-      device: device,
-      model: devices[device].model,
-      android_estimado: devices[device].android
-    });
-  } else {
-    res.json({
-      brand: brand,
-      device: device,
-      model: "desconocido",
-      android_estimado: "desconocido"
-    });
-  }
+  res.json({
+    brand: device.device?.brand || "desconocido",
+    model: device.device?.model || "desconocido",
+    type: device.device?.type || "desconocido",
+    os: device.os?.name || "desconocido",
+    android_version: device.os?.version || "desconocido",
+    browser: device.client?.name || "desconocido"
+  });
 
 });
 
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
-  console.log("Servidor funcionando en puerto " + PORT);
+  console.log("Servidor corriendo en puerto " + PORT);
 });
