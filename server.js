@@ -1,17 +1,51 @@
-const http = require("http");
+const express = require("express");
+const app = express();
 
-const server = http.createServer((req, res) => {
+app.use(express.json());
 
-  const userAgent = req.headers["user-agent"];
+const devices = {
+  "SM-S918B": {
+    model: "Samsung Galaxy S23 Ultra",
+    android: "14"
+  },
+  "Pixel 8": {
+    model: "Google Pixel 8",
+    android: "14"
+  },
+  "SM-A515F": {
+    model: "Samsung Galaxy A51",
+    android: "13"
+  }
+};
 
-  res.writeHead(200, { "Content-Type": "application/json" });
+app.get("/", (req, res) => {
+  res.send("API PideeQR funcionando");
+});
 
-  res.end(JSON.stringify({
-    android: userAgent
-  }));
+app.get("/device", (req, res) => {
+
+  const brand = req.query.brand;
+  const device = req.query.deviceId;
+
+  if(devices[device]){
+    res.json({
+      brand: brand,
+      device: device,
+      model: devices[device].model,
+      android_estimado: devices[device].android
+    });
+  } else {
+    res.json({
+      brand: brand,
+      device: device,
+      model: "desconocido",
+      android_estimado: "desconocido"
+    });
+  }
 
 });
 
-server.listen(process.env.PORT || 8080, () => {
-  console.log("Servidor funcionando");
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log("Servidor funcionando en puerto " + PORT);
 });
